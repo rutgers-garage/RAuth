@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify
 
 
 app = Flask(__name__)
-client = MongoClient('mongodb+srv://rauth:<password>@cluster0.ec1wg.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+client = MongoClient('mongodb+srv://rauth:dapass@cluster0.ec1wg.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
 
 @app.route("/addUser", methods=['POST'])
 def add_user():
