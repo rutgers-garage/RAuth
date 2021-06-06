@@ -1,10 +1,21 @@
 import pymongo
 from pymongo import MongoClient
 from flask import Flask, request, jsonify
+from flask_cors import CORS, cross_origin
 
 
 app = Flask(__name__)
+cors = CORS(app)
 client = MongoClient('mongodb+srv://rauth:dapass@cluster0.ec1wg.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+
+@app.route("/userExists", methods=['POST'])
+def user_exist():
+    user_info = request.get_json()
+    db = client.userbase
+    users = db["users"]
+    if users.find_one({"netid": user_info["netid"]}) is not None:
+        return True
+    return False
 
 @app.route("/addUser", methods=['POST'])
 def add_user():
