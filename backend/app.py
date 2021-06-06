@@ -22,6 +22,7 @@ def add_user():
     user_info = request.get_json()
     db = client.userbase
     users = db["users"]
+    print(user_info)
     if users.find_one({"netid": user_info["netid"]}) is not None:
         return "user exists"
     new_user = {

@@ -1,41 +1,63 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import GoogleLogin from 'react-google-login';
 import { Redirect } from "react-router-dom";
 
 const Login = () => {
 
-  const [netid, setNetid] = useState(undefined)
+  const [attempt, setAttempt] = useState(false)
+  const [exists, setExists] = useState(false)
 
   const responseGoogle = (response) => {
     console.log(response);
   }
   
-  const success = (response) => {
-    console.log(response);
-    console.log(response["At"]["ku"]);
-    let x = response["At"]["ku"];
-    let index = x.indexOf("@");
-    x = x.substring(0, index);
-    sessionStorage.setItem("email", x);
-    setNetid(x)
-  }
+  const processGoogleAuth = (response) => {
+    let netid = response["At"]["ku"];
+    let index = netid.indexOf("@");
+    netid = netid.substring(0, index);
+    return netid
+  } 
 
-  if(sessionStorage.getItem("email") != null){
-    return <Redirect to="/redir" netid={netid} />;
+  const checkUser = async (netid) => {
+    console.log("wawoweewa")
+    await fetch("http://127.0.0.1:5000/getUser?netid="+netid, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => {
+      console.log(res)
+      return res.json()
+    })
+    .then(r => {
+      console.log(r)
+      setExists(r)
+    })
   }
   
-  return(
-    <div>
-      <GoogleLogin
-        clientId="928852366939-tps39s15ntonmmrc0pllpj0klionbs7c.apps.googleusercontent.com"
-        buttonText="Login"
-        onSuccess={success}
-        onFailure={responseGoogle}
-        cookiePolicy={'single_host_origin'}
-        hostedDomain="scarletmail.rutgers.edu"
-      />
-    </div>
-  );
+  const success = async (res) => {
+    const netid = processGoogleAuth(res)
+    console.log(netid)
+    await checkUser(netid)
+    setAttempt(true)
+    sessionStorage.setItem("netid", netid);
+  }
+
+  console.log(exists)
+
+  return attempt ? 
+    (exists.success ? <Redirect to="/dashboard"/> : <Redirect to="/register"/> ) :
+    (
+      <div>
+        <GoogleLogin
+          clientId="928852366939-tps39s15ntonmmrc0pllpj0klionbs7c.apps.googleusercontent.com"
+          buttonText="Login"
+          onSuccess={success}
+          onFailure={responseGoogle}
+          cookiePolicy={'single_host_origin'}
+          hostedDomain="scarletmail.rutgers.edu"
+        />
+      </div>
+    );
 }
 
 export default Login;
